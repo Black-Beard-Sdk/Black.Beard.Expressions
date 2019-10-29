@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bb.Workflows.Exceptions
+namespace Bb.Exceptions
 {
     [Serializable]
     public class DuplicatedArgumentNameMethodReferenceException : Exception
