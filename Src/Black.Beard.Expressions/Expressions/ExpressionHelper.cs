@@ -149,6 +149,11 @@ namespace Bb.Expresssions
 
         }
 
+        public static MemberExpression Property(this Expression self, PropertyInfo property)
+        {
+            return Expression.Property(self, property);
+        }
+
         public static MethodCallExpression Call(this MethodInfo self, params Expression[] arguments)
         {
 
@@ -185,7 +190,6 @@ namespace Bb.Expresssions
 
                 _args.Add(argument.ConvertIfDifferent(parameter.ParameterType));
 
-                _args.Add(argument);
             }
 
             return Expression.Call(self, methodTarget, _args.ToArray());
@@ -212,6 +216,12 @@ namespace Bb.Expresssions
                 : self.Type;
 
         }
+
+        public static IndexExpression Arrayindex(this Expression self, Expression index)
+        {
+            return Expression.ArrayAccess( self, index);
+        }
+
 
         /// <summary>
         /// return an expression of convertion if targetype are differents
