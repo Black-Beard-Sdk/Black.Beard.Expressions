@@ -2,19 +2,23 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Bb.Expresssions
+namespace Bb.Expresssions.Statements
 {
+
+
     public class LoopStatement : Statement
     {
 
-        public LoopStatement()
+        public LoopStatement(SourceCode parent) : base(parent)
         {
+            this.Body = new SourceCode(parent);
             this._breakLabel = this.Body.AddLabel(Labels.GetNewName(), KindLabelEnum.Break);
             this._continueLabel = this.Body.AddLabel(Labels.GetNewName(), KindLabelEnum.Continue);
-
         }
 
         public SourceCode Body { get; set; }
+
+        public Expression Where { get; set; }
 
         public override Expression GetExpression(HashSet<string> variableParent)
         {
@@ -24,15 +28,20 @@ namespace Bb.Expresssions
             if (b1.CanReduce)
                 b1 = b1.Reduce();
 
-            var expression = Expression.Loop(b1, this._breakLabel.Instance, this._continueLabel.Instance);
+            var @if = Expression.IfThenElse(Where, b1, GenerateBreak());
+
+            var expression = Expression.Loop(@if, this._breakLabel.Instance, this._continueLabel.Instance);
 
             return expression;
 
         }
 
+        public GotoExpression GenerateBreak() { return Expression.Break(_breakLabel.Instance); }
 
-        private readonly Label _breakLabel;
-        private readonly Label _continueLabel;
+        public GotoExpression GenerateContinue() { return Expression.Break(_continueLabel.Instance); }
+
+        protected readonly Label _breakLabel;
+        protected readonly Label _continueLabel;
 
 
     }

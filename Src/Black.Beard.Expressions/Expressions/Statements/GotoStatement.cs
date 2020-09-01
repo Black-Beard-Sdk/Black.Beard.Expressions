@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Bb.Expresssions
+namespace Bb.Expresssions.Statements
 {
     public class GotoStatement : Statement
     {
+
+        public GotoStatement(SourceCode parent)
+            : base(parent)
+        {
+
+        }
 
         public Label Label { get; set; }
 

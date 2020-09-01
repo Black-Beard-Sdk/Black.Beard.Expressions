@@ -3,7 +3,25 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Black.Beard.Expressions</AssemblyName>
+    <RootNamespace>Bb</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Expressions\Statements\**" />
+    <EmbeddedResource Remove="Expressions\Statements\**" />
+    <None Remove="Expressions\Statements\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Expressions\Statements\CatchStatement.cs" />
+    <Compile Include="Expressions\Statements\ConditionalStatement.cs" />
+    <Compile Include="Expressions\Statements\ExpressionStatement.cs" />
+    <Compile Include="Expressions\Statements\ForStatement.cs" />
+    <Compile Include="Expressions\Statements\GotoStatement.cs" />
+    <Compile Include="Expressions\Statements\LoopStatement.cs" />
+    <Compile Include="Expressions\Statements\Statement.cs" />
+    <Compile Include="Expressions\Statements\TryStatement.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Reflection.Emit" Version="4.6.0" />

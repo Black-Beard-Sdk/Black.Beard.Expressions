@@ -37,7 +37,7 @@ namespace Bb.Expresssions
         }
 
         internal string GetNewName()
-        {
+        { 
             return $"var_{this._variables.Count}";
         }
 
@@ -51,6 +51,14 @@ namespace Bb.Expresssions
 
         private readonly Dictionary<string, Variable> _variables;
 
+        internal void Merge(Variables variables)
+        {
+
+            if (variables != this)
+                foreach (var item in variables.Items)
+                    this.Add(item);
+
+        }
     }
 
 }

@@ -1,13 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Bb.Expresssions
+namespace Bb.Expresssions.Statements
 {
     public class TryStatement : Statement
     {
 
-        public TryStatement()
+
+        public TryStatement(SourceCode parent)
+            : base(parent)
         {
+
+        }
+
+
+        public CatchStatement Catch(Type self)
+        {
+
+            var result = new CatchStatement(this._parent)
+            {
+                TypeToCatch = self,
+                
+            };
+            this.Catchs.Add(result);
+
+            return result;
 
         }
 
@@ -15,7 +33,19 @@ namespace Bb.Expresssions
 
         public List<CatchStatement> Catchs { get; set; } = new List<CatchStatement>();
 
-        public SourceCode Finally { get; set; }
+        public SourceCode Finally 
+        {
+            get
+            {
+                if (_finally == null)
+                    _finally = new SourceCode(this._parent);
+
+                return _finally;
+            }
+           
+        }
+
+
 
         public override Expression GetExpression(HashSet<string> variableParent)
         {
@@ -48,29 +78,29 @@ namespace Bb.Expresssions
                 _catchs.Add(c);
             }
 
-            if (Finally != null)
-                    expressionFinaly = Finally.GetExpression(new HashSet<string>(variableParent));
+            if (_finally != null)
+                    expressionFinaly = _finally.GetExpression(new HashSet<string>(variableParent));
 
 
             if (expressionFinaly != null)
             {
                 if (_catchs.Count > 0)
-                    resultExpression = System.Linq.Expressions.Expression.TryCatchFinally(expressionTry, expressionFinaly, _catchs.ToArray());
+                    resultExpression = Expression.TryCatchFinally(expressionTry, expressionFinaly, _catchs.ToArray());
                 else
-                    resultExpression = System.Linq.Expressions.Expression.TryFinally(expressionTry, expressionFinaly);
+                    resultExpression =Expression.TryFinally(expressionTry, expressionFinaly);
             }
             else
-                resultExpression = System.Linq.Expressions.Expression.TryCatch(expressionTry, _catchs.ToArray());
-
+                resultExpression = Expression.TryCatch(expressionTry, _catchs.ToArray());
 
             if (resultExpression.CanReduce)
                 resultExpression = resultExpression.Reduce();
-
 
             return resultExpression;
 
         }
 
+
+        private SourceCode _finally;
 
     }
 

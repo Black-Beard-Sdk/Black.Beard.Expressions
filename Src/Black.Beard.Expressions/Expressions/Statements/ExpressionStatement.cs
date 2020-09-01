@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Bb.Expresssions
+namespace Bb.Expresssions.Statements
 {
     public class ExpressionStatement : Statement
     {
+
+        public ExpressionStatement(SourceCode parent) 
+            : base(parent)
+        {
+
+        }
 
         public Expression Expression { get; set; }
 

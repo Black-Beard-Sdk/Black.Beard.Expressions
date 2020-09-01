@@ -50,6 +50,12 @@ namespace Bb.Expresssions
 
         private readonly Dictionary<string, Label> _labels;
 
+        internal void Merge(Labels labels)
+        {
+            foreach (var item in labels.Items)
+                this.Add(item);
+        }
+
     }
 
 }

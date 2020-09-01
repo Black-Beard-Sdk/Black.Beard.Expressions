@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bb.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,11 +9,13 @@ using System.Reflection;
 namespace Bb.Expresssions
 {
 
+
     /// <summary>
     /// build lanbda and compile for ActionResult 
     /// </summary>
-    public static class ExpressionHelper
+    public static partial class ExpressionHelper
     {
+
 
         static ExpressionHelper()
         {
@@ -63,101 +66,64 @@ namespace Bb.Expresssions
 
 
 
-        public static CatchStatement Catch(this Type self)
-        {
-
-            return new CatchStatement()
-            {
-                TypeToCatch = self,
-            };
-
-        }
-
-        public static CatchStatement Catch(this ParameterExpression self)
-        {
-
-            var c = new CatchStatement()
-            {
-                TypeToCatch = self.Type,
-                Parameter = self,
-            };
-
-            c.Body.AddVar(self);
-
-            return c;
-
-        }
-
-
-
-        public static NewArrayExpression NewArray(this Type self, IEnumerable<Expression> expressions)
-        {
-            return Expression.NewArrayInit(self, expressions);
-        }
-
-        public static NewArrayExpression NewArray(this Type self, params Expression[] expressions)
-        {
-            return Expression.NewArrayInit(self, expressions);
-        }
-
-        public static ConstantExpression AsConstant(this object self, Type type = null)
-        {
-
-            if (self is Expression e)
-            {
-                if (e is ConstantExpression c)
-                    return c;
-                else
-                    throw new InvalidCastException("an expression can't be converted in constant");
-            }
-
-            if (type == null)
-                return Expression.Constant(self);
-
-            if (self != null && self.GetType() != type && self is IConvertible)
-                self = Convert.ChangeType(self, type);
-
-            return Expression.Constant(self, type);
-
-        }
-
-        //public static BinaryExpression Return(this Expression left)
-        //{
-        //    return Expression.Return(left);
-        //}
-
-
         public static BinaryExpression AssignFrom(this Expression left, Expression right)
         {
             return Expression.Assign(left, right.ConvertIfDifferent(left.ResolveType()));
         }
 
-        public static NewExpression Create(this Type type, params Expression[] args)
+
+
+        public static MemberExpression Property(this Expression self, string propertyName)
+        {
+            var properties = self.Type.GetProperties();
+            var property = properties.Where(c => c.Name == propertyName).FirstOrDefault();
+
+            if (property is null)
+                throw new MissingMemberException(propertyName);
+
+            return Property(self, property);
+        }
+
+        public static MemberExpression Property(this Expression self, string propertyName, BindingFlags binding)
         {
 
-            List<Type> _types = new List<Type>();
-            foreach (var arg in args)
-                _types.Add(arg.ResolveType());
+            var property = self.Type.GetProperty(propertyName, binding);
 
-            var ctor = type.GetConstructor(_types.ToArray());
-            if (ctor == null)
-                throw new MissingMethodException(string.Join(", ", _types.Select(c => c.Name)));
+            if (property is null)
+                throw new MissingMemberException(propertyName);
 
-            var result = Expression.New(ctor, args);
-
-            return result;
-
+            return Property(self, property);
         }
 
         public static MemberExpression Property(this Expression self, PropertyInfo property)
         {
+            if (property is null)
+                throw new NullReferenceException(nameof(property));
+
             return Expression.Property(self, property);
         }
 
-        public static MethodCallExpression Call(this MethodInfo self, params Expression[] arguments)
+
+
+        public static MethodCallExpression Call(this Expression self, string methodName, params Expression[] arguments)
         {
 
-            var parameters = self.GetParameters()
+            var methods = self.Type.GetMethods().ToList();
+            methods = methods.Where(c => c.Name == methodName).ToList();
+
+            if (methods.Count == 0)
+                throw new MissingMemberException(methodName);
+
+            methods = methods.Where(c => c.GetParameters().Length == arguments.Length).ToList();
+            if (methods.Count == 0)
+                throw new MissingMemberException($"no method {methodName} match with specified argumentq");
+
+            if (methods.Count > 1)
+                throw new DuplicatedArgumentNameMethodReferenceException(methodName);
+
+            var method = methods[0];
+
+            var parameters = method.GetParameters()
               .ToArray();
 
             List<Expression> _args = new List<Expression>(arguments.Length);
@@ -171,7 +137,8 @@ namespace Bb.Expresssions
 
             }
 
-            return Expression.Call(self, _args.ToArray());
+
+            return Expression.Call(self, method, _args.ToArray());
 
         }
 
@@ -196,17 +163,21 @@ namespace Bb.Expresssions
 
         }
 
+
+
         public static UnaryExpression Throw(this Type type, params Expression[] args)
         {
 
             if (!typeof(Exception).IsAssignableFrom(type))
                 throw new InvalidCastException($"{type.Name} don't inherit from Exception");
 
-            var result = Expression.Throw(Create(type, args), typeof(NullReferenceException));
+            var result = Expression.Throw(type.CreateObject(args), typeof(NullReferenceException));
 
             return result;
 
         }
+
+
 
         public static Type ResolveType(this Expression self)
         {
@@ -219,7 +190,7 @@ namespace Bb.Expresssions
 
         public static IndexExpression Arrayindex(this Expression self, Expression index)
         {
-            return Expression.ArrayAccess( self, index);
+            return Expression.ArrayAccess(self, index);
         }
 
 
@@ -294,15 +265,6 @@ namespace Bb.Expresssions
 
         }
 
-        public static Func<object, T> GetConstant<T>(object value)
-        {
-            Expression cc = Expression.Constant(value);
-            if (cc.Type != typeof(T))
-                cc = Expression.Convert(cc, typeof(T));
-            ParameterExpression arg0 = Expression.Parameter(typeof(object), "arg0");
-            var lbd = Expression.Lambda<Func<object, T>>(cc, arg0);
-            return lbd.Compile();
-        }
 
         public static TypeBinaryExpression TypeEqual(this Expression left, Type type)
         {
@@ -320,10 +282,7 @@ namespace Bb.Expresssions
         }
 
 
-        public static DefaultExpression DefaultValue(this Type self)
-        {
-            return Expression.Default(self);
-        }
+
 
         #region Binary expressions
 
@@ -495,11 +454,18 @@ namespace Bb.Expresssions
         {
             return Expression.Decrement(left);
         }
-        
-        public static UnaryExpression Increment(this Expression left)
+
+        public static UnaryExpression PostDecrementAssign(this Expression left)
         {
-            return Expression.Increment(left);
+            return Expression.PostDecrementAssign(left);
         }
+
+        public static UnaryExpression PreDecrementAssign(this Expression left)
+        {
+            return Expression.PreDecrementAssign(left);
+        }
+
+
 
         public static UnaryExpression IsTrue(this Expression left)
         {
@@ -521,19 +487,15 @@ namespace Bb.Expresssions
             return Expression.Negate(left);
         }
 
-        public static UnaryExpression PostDecrementAssign(this Expression left)
+
+        public static UnaryExpression Increment(this Expression left)
         {
-            return Expression.PostDecrementAssign(left);
+            return Expression.Increment(left);
         }
 
         public static UnaryExpression PostIncrementAssign(this Expression left)
         {
             return Expression.PostIncrementAssign(left);
-        }
-
-        public static UnaryExpression PreDecrementAssign(this Expression left)
-        {
-            return Expression.PreDecrementAssign(left);
         }
 
         public static UnaryExpression PreIncrementAssign(this Expression left)
@@ -542,6 +504,7 @@ namespace Bb.Expresssions
         }
 
         #endregion Unary expression
+
 
         private static Dictionary<Type, Dictionary<Type, MethodInfo>> _dicConverters = new Dictionary<Type, Dictionary<Type, MethodInfo>>();
 
