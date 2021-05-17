@@ -4,45 +4,59 @@ using System.Linq.Expressions;
 
 namespace Bb.Expresssions.Statements
 {
-    public class TryStatement : Statement
+
+    public class TryStatement : BodyStatement
     {
 
 
-        public TryStatement(SourceCode parent)
-            : base(parent)
+        public TryStatement()
         {
-
+            this._catchs = new List<CatchStatement>();
         }
+        // 
 
+        public CatchStatement Catch()
+        {
+            return Catch(typeof(Exception));
+        }
 
         public CatchStatement Catch(Type self)
         {
 
-            var result = new CatchStatement(this._parent)
+            var result = new CatchStatement()
             {
                 TypeToCatch = self,
-                
             };
-            this.Catchs.Add(result);
+
+            this._catchs.Add(result);
+
+            if (this._parent != null)
+                result.SetParent(_parent);
 
             return result;
 
         }
 
-        public SourceCode Try { get; set; }
+        public IEnumerable<CatchStatement> Catchs { get => _catchs; }
 
-        public List<CatchStatement> Catchs { get; set; } = new List<CatchStatement>();
-
-        public SourceCode Finally 
+        public SourceCode Finally
         {
             get
             {
+
                 if (_finally == null)
-                    _finally = new SourceCode(this._parent);
+                    Finally = new SourceCode();
 
                 return _finally;
             }
-           
+            set
+            {
+                if (this._parent != null)
+                    _finally.SetParent(_parent);
+
+                _finally = value;
+            }
+
         }
 
 
@@ -54,7 +68,7 @@ namespace Bb.Expresssions.Statements
             Expression resultExpression;
             Expression expressionFinaly = null;
 
-            Expression expressionTry = Try.GetExpression(new HashSet<string>(variableParent));
+            Expression expressionTry = Body.GetExpression(new HashSet<string>(variableParent));
 
             foreach (CatchStatement @catch in Catchs)
             {
@@ -99,9 +113,16 @@ namespace Bb.Expresssions.Statements
 
         }
 
+        internal override void SetParent(SourceCode sourceCodes)
+        {
+            base.SetParent(sourceCodes);
+            _finally?.SetParent(sourceCodes);
+            foreach (var item in Catchs)
+                item.SetParent(sourceCodes);
+        }
 
         private SourceCode _finally;
-
+        private readonly List<CatchStatement> _catchs;
     }
 
 }

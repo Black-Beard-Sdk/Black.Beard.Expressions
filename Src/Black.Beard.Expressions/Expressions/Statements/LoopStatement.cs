@@ -6,17 +6,15 @@ namespace Bb.Expresssions.Statements
 {
 
 
-    public class LoopStatement : Statement
+    public class LoopStatement : BodyStatement
     {
 
-        public LoopStatement(SourceCode parent) : base(parent)
+        public LoopStatement()
         {
-            this.Body = new SourceCode(parent);
+            this.Body = new SourceCode();
             this._breakLabel = this.Body.AddLabel(Labels.GetNewName(), KindLabelEnum.Break);
             this._continueLabel = this.Body.AddLabel(Labels.GetNewName(), KindLabelEnum.Continue);
         }
-
-        public SourceCode Body { get; set; }
 
         public Expression Where { get; set; }
 

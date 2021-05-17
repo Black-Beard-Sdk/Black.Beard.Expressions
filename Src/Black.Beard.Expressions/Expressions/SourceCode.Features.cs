@@ -6,19 +6,28 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Bb.Expresssions
 {
 
     public partial class SourceCode
-    { 
+    {
 
 
         #region Exceptions
 
+        public TryStatement Try(params Expression[] expressions)
+        {
+            var t = Try();
+            foreach (var item in expressions)
+                t.Body.Add(item);
+            return t;
+        }
+
         public TryStatement Try()
         {
-            return Try(new SourceCode(this));
+            return Try(new SourceCode());
         }
 
         public TryStatement Try(SourceCode self)
@@ -26,15 +35,21 @@ namespace Bb.Expresssions
 
             self._parent = this;
 
-            var tryStatement = new TryStatement(this)
+            var tryStatement = new TryStatement()
             {
-                Try = self,
+                Body = self,
             };
 
             this.Add(tryStatement);
 
             return tryStatement;
 
+        }
+
+        public SourceCode Rethrow()
+        {
+            this.Add(Expression.Rethrow());
+            return this;
         }
 
         #endregion Exceptions
@@ -45,7 +60,7 @@ namespace Bb.Expresssions
         public GotoStatement Break()
         {
             var label = this.GetLabelImpl(KindLabelEnum.Break);
-            var l = new GotoStatement(this) { Label = label };
+            var l = new GotoStatement() { Label = label };
             Add(l);
             return l;
         }
@@ -53,7 +68,7 @@ namespace Bb.Expresssions
         public GotoStatement Continue()
         {
             var label = this.GetLabelImpl(KindLabelEnum.Continue);
-            var l = new GotoStatement(this) { Label = label };
+            var l = new GotoStatement() { Label = label };
             Add(l);
             return l;
         }
@@ -61,7 +76,7 @@ namespace Bb.Expresssions
         public GotoStatement Return(Expression @return)
         {
             var label = this.GetLabelImpl(KindLabelEnum.Return);
-            var l = new GotoStatement(this) { Label = label, Expression = @return, };
+            var l = new GotoStatement() { Label = label, Expression = @return, };
             Add(l);
             return l;
 
@@ -76,7 +91,7 @@ namespace Bb.Expresssions
                 label = _parent.GetLabelImpl(kind);
 
             if (label == null)
-                throw new Exceptions.InvalidArgumentNameMethodReferenceException($"no label of {kind.ToString()} defined");
+                throw new Exceptions.InvalidArgumentNameException($"no label of {kind.ToString()} defined");
 
             return label;
 
@@ -88,9 +103,10 @@ namespace Bb.Expresssions
         {
 
             if (string.IsNullOrEmpty(name))
-                name = this._variables.GetNewName();
+                name = Labels.GetNewName();
 
-            var instance = Expression.Label(Labels.GetNewName());
+            var instance = Expression.Label(name);
+
             var label = new Label() { Instance = instance, Kind = kind, Name = instance.Name };
             this.AddLabel(label);
 
@@ -129,7 +145,7 @@ namespace Bb.Expresssions
                 return variable;
 
             if (string.IsNullOrEmpty(name))
-                name = this._variables.GetNewName();
+                name = this._variables.GetNewName(type);
 
             var instance = Expression.Parameter(type, name);
             this.AddVar(instance);
@@ -142,7 +158,7 @@ namespace Bb.Expresssions
         {
 
             if (string.IsNullOrEmpty(name))
-                name = this._variables.GetNewName();
+                name = this._variables.GetNewName(type);
 
             var instance = Expression.Parameter(type, name);
             this.AddVar(instance);
@@ -160,7 +176,7 @@ namespace Bb.Expresssions
             if (vari != null)
             {
                 if (vari.Instance != arg)
-                    throw new Exceptions.DuplicatedArgumentNameMethodReferenceException($"parameter {arg.Name} already exists");
+                    throw new Exceptions.DuplicatedArgumentNameException($"parameter {arg.Name} already exists");
             }
             else
             {

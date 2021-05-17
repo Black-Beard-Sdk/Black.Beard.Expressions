@@ -12,12 +12,20 @@ namespace Bb.Expresssions
 
         public static NewArrayExpression NewArray(this Type self, IEnumerable<Expression> expressions)
         {
-            return Expression.NewArrayInit(self, expressions);
+            List<Expression> e = new List<Expression>(expressions.Count());
+            foreach (var item in expressions)
+                e.Add(item.ConvertIfDifferent(self));
+
+            return Expression.NewArrayInit(self, e.ToArray());
         }
 
         public static NewArrayExpression NewArray(this Type self, params Expression[] expressions)
         {
-            return Expression.NewArrayInit(self, expressions);
+            List<Expression> e = new List<Expression>(expressions.Length);
+            foreach (var item in expressions)
+                e.Add(item.ConvertIfDifferent(self));
+
+            return Expression.NewArrayInit(self, e.ToArray());
         }
 
         public static NewExpression CreateObject(this Type type, params Expression[] args)
@@ -98,15 +106,7 @@ namespace Bb.Expresssions
 
         }
 
-        public static Func<object, T> GetConstant<T>(object value)
-        {
-            Expression cc = Expression.Constant(value);
-            if (cc.Type != typeof(T))
-                cc = Expression.Convert(cc, typeof(T));
-            ParameterExpression arg0 = Expression.Parameter(typeof(object), "arg0");
-            var lbd = Expression.Lambda<Func<object, T>>(cc, arg0);
-            return lbd.Compile();
-        }
+        
 
         public static DefaultExpression DefaultValue(this Type self)
         {

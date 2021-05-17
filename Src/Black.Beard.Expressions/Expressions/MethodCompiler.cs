@@ -9,11 +9,11 @@ using System.Runtime.CompilerServices;
 
 namespace Bb.Expresssions
 {
+
     public class MethodCompiler : SourceCode
     {
 
         public MethodCompiler()
-            : base(null)
         {
 
         }
@@ -25,11 +25,11 @@ namespace Bb.Expresssions
         {
 
             if (string.IsNullOrEmpty(name))
-                name = this._parameters.GetNewName();
+                name = this._parameters.GetNewName(type);
 
             var vari = this._parameters.GetByName(name);
             if (vari != null)
-                throw new Exceptions.DuplicatedArgumentNameMethodReferenceException($"parameter {name} already exists");
+                throw new Exceptions.DuplicatedArgumentNameException($"parameter {name} already exists");
 
             else
             {
@@ -144,6 +144,12 @@ namespace Bb.Expresssions
             //var o = new System.Linq.Expressions.Expression.LambdaExpressionProxy(result).DebugView;
             //if (System.Diagnostics.Debugger.IsAttached)
             //    System.Diagnostics.Debug.WriteLine(result.ToString());
+
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                var sb = SourceGenerator.GetCode(result, "Newtonsoft.Json.Linq", "Bb.TransformJson");
+                System.Diagnostics.Debug.WriteLine(sb.ToString());
+            }
 
             return result;
 

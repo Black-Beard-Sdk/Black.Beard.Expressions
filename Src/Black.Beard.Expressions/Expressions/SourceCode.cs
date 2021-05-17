@@ -1,5 +1,6 @@
 ﻿using Bb.Expresssions.Statements;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,60 +10,25 @@ using System.Runtime.CompilerServices;
 namespace Bb.Expresssions
 {
 
-    public partial class SourceCode 
+    public partial class SourceCode : ICollection<Statement>
     {
 
 
-        public SourceCode(SourceCode parent)
+        public SourceCode()
         {
-
-            this._parent = parent;
-
-            if (parent != null)
-            {
-                _variables = parent._variables;
-                _labels = parent._labels;
-            }
-            else
-            {
-                _variables = new Variables();
-                _labels = new Labels();
-            }
-
+            _variables = new Variables();
+            _labels = new Labels();
         }
 
 
-
-
-
-
-        public SourceCode Add(Expression expression)
-        {
-            this.Add(new ExpressionStatement(this) { Expression = expression });
-            return this;
-        }
-
-        public SourceCode AddRange(IEnumerable<Expression> expressions)
-        {
-            var s2 = expressions.Select(c => new ExpressionStatement(this) { Expression = c });
-            _statements.AddRange(s2);
-            return this;
-        }
-
-        public SourceCode Add(Statement statement)
-        {
-            _statements.Add(statement);
-            this.LastStatement = statement;
-            return this;
-        }
-
-        public SourceCode AddRange(IEnumerable<Statement> statements)
+        public SourceCode Add(params Statement[] statements)
         {
             foreach (var statement in statements)
                 Add(statement);
 
             return this;
         }
+
 
         internal Expression GetExpression(HashSet<string> variableParent)
         {
@@ -99,6 +65,13 @@ namespace Bb.Expresssions
 
         }
 
+        internal void SetParent(SourceCode sourceCodes)
+        {
+            this._parent = sourceCodes;
+            _variables.SetParent(sourceCodes._variables);
+            _labels.SetParent(sourceCodes._labels);
+        }
+
         public void Merge(SourceCode source)
         {
 
@@ -125,9 +98,100 @@ namespace Bb.Expresssions
 
         }
 
+
+
+        public void Add(Statement statement)
+        {
+            statement.SetParent(this);
+            _statements.Add(statement);
+            this.LastStatement = statement;
+        }
+
+        public void Clear()
+        {
+            _statements.Clear();
+        }
+
+        public bool Contains(Statement item)
+        {
+            return _statements.Contains(item);
+        }
+
+        public void CopyTo(Statement[] array, int arrayIndex)
+        {
+            _statements.CopyTo(array, arrayIndex);
+        }
+
+        public bool Remove(Statement item)
+        {
+            return _statements.Remove(item);
+        }
+
+        public IEnumerator<Statement> GetEnumerator()
+        {
+            return _statements.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _statements.GetEnumerator();
+        }
+
+        public int Count => _statements.Count;
+
+        public bool IsReadOnly => false;
+
+
+        public static implicit operator SourceCode(Expression expression)
+        {
+            var src = new SourceCode();
+                src.Add(expression);
+            return src;
+        }
+
+        public static implicit operator SourceCode(Expression[] expressions)
+        {
+            var src = new SourceCode();
+            foreach (var item in expressions)
+                src.Add(item);
+            return src;
+        }
+
+        public static implicit operator SourceCode(List<Expression> expressions)
+        {
+            var src = new SourceCode();
+            foreach (var item in expressions)
+                src.Add(item);
+            return src;
+        }
+
+        public static implicit operator SourceCode(Statement expression)
+        {
+            var src = new SourceCode();
+            src.Add(expression);
+            return src;
+        }
+
+        public static implicit operator SourceCode(Statement[] statements)
+        {
+            var src = new SourceCode();
+            foreach (var item in statements)
+                src.Add(item);
+            return src;
+        }
+
+        public static implicit operator SourceCode(List<Statement> statements)
+        {
+            var src = new SourceCode();
+            foreach (var item in statements)
+                src.Add(item);
+            return src;
+        }
+
+
         protected Variables _variables;
         protected Labels _labels;
-        internal SourceCode _parent;
+        private SourceCode _parent;
         private List<Statement> _statements = new List<Statement>();
 
     }

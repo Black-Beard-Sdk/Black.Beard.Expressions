@@ -6,8 +6,7 @@ namespace Bb.Expresssions.Statements
     public class GotoStatement : Statement
     {
 
-        public GotoStatement(SourceCode parent)
-            : base(parent)
+        public GotoStatement()
         {
 
         }
@@ -21,6 +20,10 @@ namespace Bb.Expresssions.Statements
             return null;
         }
 
+        internal override void SetParent(SourceCode sourceCodes)
+        {
+            
+        }
 
     }
 

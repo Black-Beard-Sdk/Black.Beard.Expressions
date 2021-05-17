@@ -6,8 +6,7 @@ namespace Bb.Expresssions.Statements
     public class ExpressionStatement : Statement
     {
 
-        public ExpressionStatement(SourceCode parent) 
-            : base(parent)
+        public ExpressionStatement() 
         {
 
         }
@@ -24,6 +23,11 @@ namespace Bb.Expresssions.Statements
 
             return expression;
 
+        }
+
+        internal override void SetParent(SourceCode sourceCodes)
+        {
+            
         }
 
     }

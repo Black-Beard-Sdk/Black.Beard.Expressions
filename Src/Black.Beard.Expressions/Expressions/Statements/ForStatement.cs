@@ -8,8 +8,7 @@ namespace Bb.Expresssions.Statements
     {
 
 
-        public ForStatement(SourceCode parent, Expression InitialExpression)
-            : base(parent)
+        public ForStatement(Expression InitialExpression)
         {
 
         }

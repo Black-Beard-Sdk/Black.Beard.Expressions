@@ -9,8 +9,7 @@ namespace Bb.Expresssions.Statements
     {
 
 
-        public ConditionalStatement(SourceCode parent)
-            : base(parent)
+        public ConditionalStatement()
         {
 
         }
@@ -22,9 +21,16 @@ namespace Bb.Expresssions.Statements
             get
             {
                 if (_then == null)
-                    _then = new SourceCode(this._parent);
+                    Then = new SourceCode();
 
                 return _then;
+            }
+            set
+            {
+                _then = value;
+
+                if (this._parent != null)
+                    _then.SetParent(_parent);
             }
         }
 
@@ -33,15 +39,21 @@ namespace Bb.Expresssions.Statements
             get
             {
                 if (_else == null)
-                    _else = new SourceCode(this._parent);
+                    Else = new SourceCode();
 
                 return _else;
+            }
+            set
+            {
+                if (this._parent != null)
+                    _else.SetParent(_parent);
+
+                _else = value;
             }
         }
 
 
-        private SourceCode _then;
-        private SourceCode _else;
+        
 
         public override Expression GetExpression(HashSet<string> variableParent)
         {
@@ -63,6 +75,18 @@ namespace Bb.Expresssions.Statements
             return expression;
 
         }
+
+
+        internal override void SetParent(SourceCode sourceCodes)
+        {
+            _then.SetParent(sourceCodes);
+            if (_else != null)
+                _else.SetParent(sourceCodes);
+        }
+
+
+        private SourceCode _then;
+        private SourceCode _else;
 
     }
 

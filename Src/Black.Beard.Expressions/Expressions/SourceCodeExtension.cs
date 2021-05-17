@@ -13,32 +13,24 @@ namespace Bb.Expresssions
             return source;
         }
 
-        public static ConditionalStatement If(this SourceCode source, Expression test, params Expression[] thenCodes)
+        public static ConditionalStatement If(this SourceCode source, Expression test, params Statement[] thenCodes)
         {
-
-            var _then = new SourceCode(source)
-            {
-
-            };
-
-            _then.AddRange(thenCodes.Select(c => new ExpressionStatement(source) { Expression = c }));
-
-            return source.If(test, _then, null);
-
-
+            return source.If(test, thenCodes, null);
         }
 
         public static ConditionalStatement If(this SourceCode source, Expression test, SourceCode @then, SourceCode @else)
         {
 
-            var n = new ConditionalStatement(source)
+            var n = new ConditionalStatement()
             {
                 ConditionalExpression = test,
             };
 
             n.Then.Merge(@then);
+
             if (@else != null)
                 n.Else.Merge(@else);
+
             source.Add(n);
 
             return n;
@@ -51,7 +43,7 @@ namespace Bb.Expresssions
 
             var Index = source.AddVar(typeof(int), null, initialValueExpression);
 
-            var loop = new ForStatement(source, initialValueExpression)
+            var loop = new ForStatement(initialValueExpression)
             {
                 Where = Expression.LessThan(Index, endValueExpression),
                 Index = Index,
@@ -67,7 +59,7 @@ namespace Bb.Expresssions
         public static LoopStatement While(this SourceCode source, Expression conditionExpression)
         {
 
-            var loop = new LoopStatement(source)
+            var loop = new LoopStatement()
             {
                 Where = conditionExpression
             };
