@@ -75,7 +75,9 @@ namespace Bb.Expresssions
 
         protected override Expression VisitBlock(BlockExpression node)
         {
+
             Append("{");
+            CutLine();
             IncrementIndentation();
 
             //foreach (var item in node.Variables)
@@ -218,7 +220,7 @@ namespace Bb.Expresssions
                 case ExpressionType.AddChecked:
                 case ExpressionType.MultiplyChecked:
                 case ExpressionType.MultiplyAssignChecked:
-                    Stop();
+                    LocalDebug.Stop();
                     break;
 
                 case ExpressionType.ConvertChecked:
@@ -236,11 +238,11 @@ namespace Bb.Expresssions
                 case ExpressionType.ListInit:
                 case ExpressionType.MemberAccess:
                 case ExpressionType.MemberInit:
-                    Stop();
+                    LocalDebug.Stop();
                     break;
 
                 default:
-                    Stop();
+                    LocalDebug.Stop();
                     break;
             }
 
@@ -284,8 +286,10 @@ namespace Bb.Expresssions
             if (!(node.IfTrue is BlockExpression))
             {
                 Append("{");
+                CutLine();
                 IncrementIndentation();
             }
+
             Visit(node.IfTrue);
 
             if (!(node.IfTrue is BlockExpression))
@@ -305,6 +309,7 @@ namespace Bb.Expresssions
             CutLine();
 
             Visit(node.IfFalse);
+
 
             if (!(node.IfFalse is BlockExpression))
             {
@@ -479,7 +484,7 @@ namespace Bb.Expresssions
                 case ExpressionType.Negate:
                 case ExpressionType.NegateChecked:
                 case ExpressionType.UnaryPlus:
-                    Stop();
+                    LocalDebug.Stop();
                     break;
 
                 default:
@@ -492,7 +497,7 @@ namespace Bb.Expresssions
 
         protected override Expression VisitDebugInfo(DebugInfoExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitDebugInfo(node);
         }
 
@@ -507,66 +512,66 @@ namespace Bb.Expresssions
 
         protected override Expression VisitDynamic(DynamicExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitDynamic(node);
         }
 
         protected override ElementInit VisitElementInit(ElementInit node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitElementInit(node);
         }
 
         protected override Expression VisitExtension(Expression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitExtension(node);
         }
 
         protected override Expression VisitInvocation(InvocationExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitInvocation(node);
         }
 
         protected override Expression VisitLabel(LabelExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitLabel(node);
         }
 
         protected override Expression VisitListInit(ListInitExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitListInit(node);
         }
 
         protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitMemberAssignment(node);
         }
 
         protected override MemberBinding VisitMemberBinding(MemberBinding node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitMemberBinding(node);
         }
 
         protected override Expression VisitMemberInit(MemberInitExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitMemberInit(node);
         }
         protected override MemberListBinding VisitMemberListBinding(MemberListBinding node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitMemberListBinding(node);
         }
 
         protected override MemberMemberBinding VisitMemberMemberBinding(MemberMemberBinding node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitMemberMemberBinding(node);
         }
 
@@ -590,19 +595,19 @@ namespace Bb.Expresssions
 
         protected override Expression VisitRuntimeVariables(RuntimeVariablesExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitRuntimeVariables(node);
         }
 
         protected override Expression VisitSwitch(SwitchExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitSwitch(node);
         }
 
         protected override SwitchCase VisitSwitchCase(SwitchCase node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitSwitchCase(node);
         }
 
@@ -610,13 +615,13 @@ namespace Bb.Expresssions
 
         protected override Expression VisitTry(TryExpression node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitTry(node);
         }
 
         protected override CatchBlock VisitCatchBlock(CatchBlock node)
         {
-            Stop();
+            LocalDebug.Stop();
             return base.VisitCatchBlock(node);
         }
 
@@ -681,14 +686,6 @@ namespace Bb.Expresssions
         private void DecrementIndentation()
         {
             _indentation--;
-        }
-
-        [System.Diagnostics.DebuggerNonUserCode]
-        [System.Diagnostics.DebuggerStepThrough]
-        private void Stop()
-        {
-            if (System.Diagnostics.Debugger.IsAttached)
-                System.Diagnostics.Debugger.Break();
         }
 
         private int _indentation;

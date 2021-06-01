@@ -124,8 +124,10 @@ namespace Bb.Expresssions
             {
                 var argument = arguments[i];
                 var parameter = parameters[i];
-
-                _args.Add(argument.ConvertIfDifferent(parameter.ParameterType));
+                if (argument != null && parameter != null)
+                    _args.Add(argument.ConvertIfDifferent(parameter.ParameterType));
+                else
+                    return null;
 
             }
 
@@ -178,13 +180,18 @@ namespace Bb.Expresssions
             {
                 var method = ConverterHelper.GetConvertMethod(sourceType, targetType);
                 if (method != null)
-                        return 2;
+                    return 2;
             }
 
             return -1;
 
         }
 
+
+        //private static bool InheritFrom(this Type sourceType, Type tartType)
+        //{
+
+        //}
 
 
         /// <summary>
@@ -202,87 +209,25 @@ namespace Bb.Expresssions
             if (sourceType != targetType)
             {
 
-                //if (self is ConstantExpression c)
-                //{
-                //    result = c.Value.AsConstant(targetType);
-                //    if (result.Type != targetType)
-                //        result = Expression.Convert(result, targetType);
-                //}
-                //else
-                //{
-                    try
+                if (targetType.IsAssignableFrom(sourceType))
+                    result = Expression.Convert(self, targetType);
+
+                else if (sourceType.IsAssignableFrom(targetType))
+                    result = Expression.Convert(self, targetType);
+
+                else
+                {
+
+                    var method = ConverterHelper.GetConvertMethod(sourceType, targetType);
+                    if (method != null)
                     {
-                        result = Expression.Convert(self, targetType);
-                    }
-                    catch (Exception) // not managed
-                    {
-                        var method = ConverterHelper.GetConvertMethod(sourceType, targetType);
-                        if (method != null)
-                        {
-
-                            var parameters = method.GetParameters();
-                            Expression[] arguments = new Expression[parameters.Length];
-
-                            if (parameters[0].ParameterType == sourceType)
-                                arguments[0] = self;
-
-                            else if (typeof(IFormatProvider).IsAssignableFrom(parameters[0].ParameterType))
-                                arguments[0] = Expression.Constant(CultureInfo.CurrentCulture);
-
-                            else if (parameters[0].ParameterType.IsAssignableFrom(sourceType))
-                                arguments[0] = ConvertIfDifferent(self, parameters[0].ParameterType);
-
-                            else if (parameters[0].ParameterType == typeof(Type))
-                                arguments[0] = Expression.Constant(targetType);
-
-                            else
-                            {
-
-                            }
-
-                            if (parameters[1].ParameterType == sourceType)
-                                arguments[1] = self;
-
-                            else if (typeof(IFormatProvider).IsAssignableFrom(parameters[1].ParameterType))
-                                arguments[1] = Expression.Constant(CultureInfo.CurrentCulture);
-
-                            else if (parameters[1].ParameterType.IsAssignableFrom(sourceType))
-                                arguments[1] = ConvertIfDifferent(self, parameters[0].ParameterType);
-
-                            else if (parameters[1].ParameterType == typeof(Type))
-                                arguments[1] = Expression.Constant(targetType);
-
-                            else
-                            {
-
-                            }
-
-                            if (method is MethodInfo m)
-                            {
-
-                                if (m.IsStatic)
-                                    result = Expression.Call(null, m, arguments);
-                                else
-                                    result = Expression.Call(self, m, arguments);
-
-                            }
-                            else if (method is ConstructorInfo ctor)
-                                result = Expression.New(ctor, arguments);
-
-                        }
-
+                        result = Convert(self, targetType, result, sourceType, method);
                         if (result == null)
-                        {
-                            if (targetType != typeof(object))
-                            {
-                                result = self.ConvertIfDifferent(typeof(object));
-                                result = result.ConvertIfDifferent(targetType);
-                            }
-                            else throw;
-                        }
+                            throw new InvalidCastException($"no method for convert {sourceType} in {targetType}. please use ConverterHelper forregister a custom method");
 
                     }
-                //}
+                    
+                }
 
 
             }
@@ -293,6 +238,63 @@ namespace Bb.Expresssions
 
         }
 
+        private static Expression Convert(Expression self, Type targetType, Expression result, Type sourceType, MethodBase method)
+        {
+
+            var parameters = method.GetParameters();
+            Expression[] arguments = new Expression[parameters.Length];
+
+            if (parameters[0].ParameterType == sourceType)
+                arguments[0] = self;
+
+            else if (typeof(IFormatProvider).IsAssignableFrom(parameters[0].ParameterType))
+                arguments[0] = Expression.Constant(CultureInfo.CurrentCulture);
+
+            else if (parameters[0].ParameterType.IsAssignableFrom(sourceType))
+                arguments[0] = ConvertIfDifferent(self, parameters[0].ParameterType);
+
+            else if (parameters[0].ParameterType == typeof(Type))
+                arguments[0] = Expression.Constant(targetType);
+
+            else
+            {
+
+            }
+
+            if (parameters.Length > 1)
+            {
+                if (parameters[1].ParameterType == sourceType)
+                    arguments[1] = self;
+
+                else if (typeof(IFormatProvider).IsAssignableFrom(parameters[1].ParameterType))
+                    arguments[1] = Expression.Constant(CultureInfo.CurrentCulture);
+
+                else if (parameters[1].ParameterType.IsAssignableFrom(sourceType))
+                    arguments[1] = ConvertIfDifferent(self, parameters[0].ParameterType);
+
+                else if (parameters[1].ParameterType == typeof(Type))
+                    arguments[1] = Expression.Constant(targetType);
+
+                else
+                {
+
+                }
+
+            }
+
+            if (method is MethodInfo m)
+            {
+
+                if (m.IsStatic)
+                    result = Expression.Call(null, m, arguments);
+                else
+                    result = Expression.Call(self, m, arguments);
+
+            }
+            else if (method is ConstructorInfo ctor)
+                result = Expression.New(ctor, arguments);
+            return result;
+        }
 
         public static TypeBinaryExpression TypeEqual(this Expression left, Type type)
         {
