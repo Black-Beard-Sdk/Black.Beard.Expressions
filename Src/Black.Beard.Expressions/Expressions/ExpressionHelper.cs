@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Bb.Expresssions
+namespace Bb.Expressions
 {
 
 
@@ -226,7 +226,7 @@ namespace Bb.Expresssions
                             throw new InvalidCastException($"no method for convert {sourceType} in {targetType}. please use ConverterHelper forregister a custom method");
 
                     }
-                    
+
                 }
 
 
@@ -234,6 +234,11 @@ namespace Bb.Expresssions
             else
                 result = self;
 
+            if (result == null)
+            {
+                LocalDebug.Stop();
+                throw new Exception($"missing converter for convert {sourceType} to {targetType}");
+            }
             return result;
 
         }

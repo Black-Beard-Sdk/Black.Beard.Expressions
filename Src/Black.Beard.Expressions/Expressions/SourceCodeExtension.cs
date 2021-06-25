@@ -1,8 +1,8 @@
-﻿using Bb.Expresssions.Statements;
+﻿using Bb.Expressions.Statements;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Bb.Expresssions
+namespace Bb.Expressions
 {
     public static partial class SourceCodeExtension
     {
