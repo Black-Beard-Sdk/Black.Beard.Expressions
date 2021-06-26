@@ -1,7 +1,8 @@
-﻿using Bb.CsharpGenerators;
+﻿using Bb.Expressions.CsharpGenerators;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -18,6 +19,8 @@ namespace Bb.Expressions
         {
 
         }
+
+        public string OutputPath { get; set; }
 
 
         #region parameters
@@ -86,14 +89,18 @@ namespace Bb.Expressions
                 //var sb = SourceGenerator.GetCode(result, _u);
                 //System.Diagnostics.Debug.WriteLine(sb.ToString());
 
-                var code = SourceCodeDomGenerator.GetCode(lbd, _u);
+                var code = SourceCodeDomGenerator.GetCode(lbd, "n_" + Path.GetFileNameWithoutExtension(filepathCode), "Myclass", "MyMethod", _u);
                 System.CodeDom.CodeCompileUnit compileUnit = new System.CodeDom.CodeCompileUnit()
                 {
 
                 };
 
+                string path = Path.Combine(this.OutputPath, "_temps");
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+                string file = Path.Combine(path, filepathCode);
                 compileUnit.Namespaces.Add(code);
-                LocalCodeGenerator.GenerateCsharpCode(compileUnit, filepathCode);
+                LocalCodeGenerator.GenerateCsharpCode(compileUnit, file);
 
             }
 
@@ -136,8 +143,6 @@ namespace Bb.Expressions
         }
 
         #endregion compiler
-
-
 
         private Variables _parameters = new Variables();
 

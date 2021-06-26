@@ -70,8 +70,6 @@ namespace Bb.Expressions
             MethodInfo[] ms = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
             foreach (var item in ms)
             {
-                if (!_names.Contains(item.Name))
-                    continue;
 
                 var p = item.GetParameters();
                 if ((p.Length == 1 || p.Length == 2) && p[0].ParameterType != item.ReturnType)

@@ -1,11 +1,16 @@
 ﻿using Bb.Expressions.Statements;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
 namespace Bb.Expressions
 {
+
     public static partial class SourceCodeExtension
     {
+
 
         public static SourceCode Assign(this SourceCode source, Expression left, Expression right)
         {
@@ -45,7 +50,7 @@ namespace Bb.Expressions
 
             var loop = new ForStatement(initialValueExpression)
             {
-                Where = Expression.LessThan(Index, endValueExpression),
+                Condition = Expression.LessThan(Index, endValueExpression),
                 Index = Index,
                 MoveIndex = Index.PostIncrementAssign(),
             };
@@ -61,7 +66,7 @@ namespace Bb.Expressions
 
             var loop = new LoopStatement()
             {
-                Where = conditionExpression
+                Condition = conditionExpression
             };
             source.Add(loop);
 

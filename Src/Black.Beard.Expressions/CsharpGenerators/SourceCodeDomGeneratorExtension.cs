@@ -3,11 +3,27 @@ using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Bb.Expressions
+namespace Bb.Expressions.CsharpGenerators
 {
 
     public static class SourceCodeDomGeneratorExtension
     {
+
+
+        public static void AddItem(this CodeStatementCollection self, CodeObject item)
+        {
+            if (item is CodeExpression c)
+                self.Add(new CodeExpressionStatement(c));
+
+            else if (item is CodeStatement s)
+                self.Add(s);
+
+            else
+            {
+                LocalDebug.Stop();
+
+            }
+        }
 
         public static int NestedArrayDepth(this CodeTypeReference self) => self.ArrayElementType == null ? 0 : 1 + self.ArrayElementType.NestedArrayDepth();
 
@@ -94,28 +110,5 @@ namespace Bb.Expressions
         }
 
     }
-
-    //public class CodeTypeIs : CodeSnippetExpression
-    //{
-
-    //    public CodeTypeIs(CodeExpression expression, Type type) 
-    //        : base (GenerateCode(expression, type))
-    //    {
-
-    //    }
-
-    //    private static string GenerateCode(CodeExpression expression, Type type)
-    //    {
-
-    //        var sb = CodeGenerator.GenerateCsharpCode(expression);
-    //        sb.Append(" is ");
-
-    //        //var sb2 = CodeGenerator.GenerateCsharpCode(type.ToRefType());
-
-    //        return sb.ToString();
-
-    //    }
-
-    //}
 
 }
