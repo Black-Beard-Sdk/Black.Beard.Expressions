@@ -385,7 +385,7 @@ namespace Bb.Expressions.CsharpGenerators
 
             if (this._withDebug)
             {
-                var stop = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(Json.Jslt.Services.RuntimeContext).ToRefType(_usings)), "Stop");
+                var stop = new CodeMethodInvokeExpression(new CodeVariableReferenceExpression("argContext"), "Stop");
                 this._methodRoot.Statements.Add(stop);
             }
 

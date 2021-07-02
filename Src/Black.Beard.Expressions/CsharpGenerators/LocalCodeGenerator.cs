@@ -23,6 +23,10 @@ namespace Bb.Expressions.CsharpGenerators
 
         public static void GenerateCode(CodeDomProvider provider, CodeCompileUnit compileunit, string outputfile)
         {
+
+            if (File.Exists(outputfile))
+                File.Delete(outputfile);
+
             // Create an IndentedTextWriter, constructed with
             // a StreamWriter to the source file.
             using (IndentedTextWriter tw = new IndentedTextWriter(new StreamWriter(outputfile, false), "    "))
