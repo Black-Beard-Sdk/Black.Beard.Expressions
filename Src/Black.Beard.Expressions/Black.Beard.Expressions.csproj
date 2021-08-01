@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="Expressions\Statements\BodyStatement.cs" />
     <Compile Include="Expressions\Statements\CatchStatement.cs" />
     <Compile Include="Expressions\Statements\ConditionalStatement.cs" />
     <Compile Include="Expressions\Statements\ExpressionStatement.cs" />
